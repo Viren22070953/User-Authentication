@@ -24,5 +24,12 @@ router.post("/login",authController.loginUser);
 router.get("/get-me",authController.getMe);
 
 
+/**
+ * GET /api/auth/refresh-roken
+ */
+
+router.get("/refresh-token",authController.refreshToken);
+
+
 
 module.exports=router;

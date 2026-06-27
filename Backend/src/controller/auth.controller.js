@@ -31,31 +31,31 @@ async function registerUser(req,res){
     })
     
 
-    const token=jwt.sign({
+    const accesssToken=jwt.sign({
       id:user._id
-    },process.env.JWT_SECRET,{expiresIn:"1d"}
-  )
+      },process.env.JWT_SECRET,{expiresIn:"1d"}
+    )
 
-    res.cookie("token",token);
+    const refreshToken=jwt.sign({
+      id:user._id
+      },process.env.JWT_SECRET,{expiresIn:"1d"}
+    )
 
-    res.status(200).json({
+    res.cookie("refreshToken",refreshToken,{
+      httpOnly:true,
+      secure:true,
+      sameSite:'strict',
+      maxAge:7*24*60*60*1000
+    });
+
+    res.status(201).json({
       message:"User Created Succesfully",
       user:{
         username,
         email,
-        token
+        accessToken:accesssToken
       }
-    })
-
-  
-
-  
-
-
-
-
-
-  
+    }) 
 
 }
 
@@ -84,11 +84,16 @@ async function loginUser(req,res){
     })
   }
 
-  const token=jwt.sign({
+  const refreshToken=jwt.sign({
     id:user._id
-  },process.env.JWT_SECRET)
+  },process.env.JWT_SECRET,{expiresIn:"7d"})
 
-  res.cookie("token",token);
+  res.cookie("refreshToken",refreshToken,{
+      httpOnly:true,
+      secure:true,
+      sameSite:'strict',
+      maxAge:7*24*60*60*1000
+    });
 
   res.status(200).json({
     message:"User logged in succesfully"
@@ -100,15 +105,15 @@ async function getMe(req,res){
 
   try{
 
-     const token=req.cookies.token;
+     const refreshToken=req.cookies.refreshToken;
 
-    if(!token){
+    if(!refreshToken){
       return res.status(401).json({
         message:"Token not available"
       })
     }
 
-    const decoded=jwt.verify(token,process.env.JWT_SECRET)
+    const decoded=jwt.verify(refreshToken,process.env.JWT_SECRET)
 
     const user=await userModel.findById(decoded.id)
 
@@ -137,4 +142,46 @@ async function getMe(req,res){
 
 }
 
-module.exports={registerUser,loginUser,getMe};
+
+async function refreshToken(req,res){
+
+  const refreshToken=req.cookies.refreshToken;
+
+  if(!refreshToken){
+    return res.status(401).json({
+      message:"Unauthorized token"
+    })
+  }
+
+  const decoded = jwt.verify(refreshToken,process.env.JWT_SECRET)
+
+  const accessToken= jwt.sign({
+    id:decoded.id
+  },process.env.JWT_SECRET,{expiresIn:"15m"}
+  )
+
+  //THis is only for extra additional security
+  
+  const newRefreshToken = jwt.sign({
+    id:decoded.id
+  },process.env.JWT_SECRET,{expiresIn:"7d"})
+
+  res.cookie("refreshToken",newRefreshToken,{
+      httpOnly:true,
+      secure:true,
+      sameSite:'strict',
+      maxAge:7*24*60*60*1000
+    });
+
+  res.status(200).json({
+    message:"Access token send successfully",
+    accessToken
+  })
+
+
+
+
+}
+
+
+module.exports={registerUser,loginUser,getMe,refreshToken};
