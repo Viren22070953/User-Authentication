@@ -33,12 +33,12 @@ async function registerUser(req,res){
 
     const accesssToken=jwt.sign({
       id:user._id
-      },process.env.JWT_SECRET,{expiresIn:"1d"}
+      },process.env.JWT_SECRET,{expiresIn:"15m"}
     )
 
     const refreshToken=jwt.sign({
       id:user._id
-      },process.env.JWT_SECRET,{expiresIn:"1d"}
+      },process.env.JWT_SECRET,{expiresIn:"7d"}
     )
 
     res.cookie("refreshToken",refreshToken,{
@@ -84,6 +84,11 @@ async function loginUser(req,res){
     })
   }
 
+  const accesssToken=jwt.sign({
+      id:user._id
+      },process.env.JWT_SECRET,{expiresIn:"15m"}
+  )
+
   const refreshToken=jwt.sign({
     id:user._id
   },process.env.JWT_SECRET,{expiresIn:"7d"})
@@ -95,9 +100,14 @@ async function loginUser(req,res){
       maxAge:7*24*60*60*1000
     });
 
-  res.status(200).json({
-    message:"User logged in succesfully"
-  })
+  res.status(201).json({
+      message:"User Created Succesfully",
+      user:{
+        username,
+        email,
+        accessToken:accesssToken
+      }
+  }) 
 
 }
 
@@ -105,18 +115,19 @@ async function getMe(req,res){
 
   try{
 
-     const refreshToken=req.cookies.refreshToken;
+    const authHeader=req.headers.authorization;
 
-    if(!refreshToken){
+    if(!authHeader){
       return res.status(401).json({
-        message:"Token not available"
+        message:"Access Token not available"
       })
     }
 
-    const decoded=jwt.verify(refreshToken,process.env.JWT_SECRET)
+    const accessToken = authHeader.split(" ")[1];
+
+    const decoded=jwt.verify(accessToken,process.env.JWT_SECRET)
 
     const user=await userModel.findById(decoded.id)
-
 
     res.status(200).json({
       message:"User data fetched succesfully",
