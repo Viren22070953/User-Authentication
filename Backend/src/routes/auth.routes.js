@@ -43,6 +43,12 @@ router.get("/logout",authController.logoutUser);
 
 router.get("/logout-all",authController.logoutAll);
 
+/**
+ * GET /api/auth/verify-email
+ */
+
+router.get("/verify-email",authController.verifyEmail);
+
 
 
 module.exports=router;
