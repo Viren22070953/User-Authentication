@@ -30,6 +30,19 @@ router.get("/get-me",authController.getMe);
 
 router.get("/refresh-token",authController.refreshToken);
 
+/**
+ * GET /api/auth/logout
+ */
+
+router.get("/logout",authController.logoutUser);
+
+
+/**
+ * GET /api/auth/logoutAll
+ */
+
+router.get("/logout-all",authController.logoutAll);
+
 
 
 module.exports=router;
