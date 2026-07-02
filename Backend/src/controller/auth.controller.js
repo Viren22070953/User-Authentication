@@ -10,8 +10,6 @@ const otpModel=require("../models/otp.model");
 
 const {generateOTP,getOtpHtml}=require("../utils/utils")
 
-
-
 async function registerUser(req,res){
 
     const {username,email,password}=req.body;

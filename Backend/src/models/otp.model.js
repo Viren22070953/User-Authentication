@@ -11,6 +11,7 @@ const otpSchema = new mongoose.Schema({
     ref:"user",
     required:true
   },
+  
   otpHash:{
     type:String,
     required:true
