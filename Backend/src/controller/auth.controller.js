@@ -342,4 +342,6 @@ async function verifyEmail(req,res){
 
 }
 
+
+
 module.exports={registerUser,loginUser,getMe,refreshToken,logoutUser,logoutAll,verifyEmail};
